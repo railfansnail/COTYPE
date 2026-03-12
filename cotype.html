@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COTYPE - 코타입</title>
+<link rel="icon" type="image/png" href="https://i.ibb.co/WWprhB8D/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;
+  --border:#30363d;--text:#e6edf3;--dim:#484f58;
+  --correct:#3fb950;--wrong:#f85149;--cursor:#58a6ff;--pending:#3d444d;
+  --kw:#ff7b72;--str:#a5d6ff;--num:#79c0ff;--cmt:#8b949e;
+  --fn:#d2a8ff;--punc:#e6edf3;--tag:#7ee787;--attr:#79c0ff;--val:#a5d6ff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Fira Code',monospace;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+
+
+/* ── TOPBAR ── */
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 18px;display:flex;align-items:center;height:44px;flex-shrink:0;gap:8px;}
+.traffic{display:flex;gap:6px;margin-right:14px;}
+.tl{width:11px;height:11px;border-radius:50%;}
+.tl.r{background:#f85149;}.tl.y{background:#d29922;}.tl.g{background:#3fb950;}
+.filetab{padding:0 16px;height:100%;display:flex;align-items:center;gap:7px;font-size:.75rem;color:var(--text);border-right:1px solid var(--border);background:var(--bg);position:relative;flex-shrink:0;}
+.filetab::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--cursor);}
+.fdot{width:6px;height:6px;border-radius:50%;background:var(--cursor);opacity:.7;}
+.topstats{display:flex;gap:14px;font-size:.67rem;color:var(--dim);align-items:center;flex-wrap:wrap;}
+.topstats b{color:var(--text);}
+.tb-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+.icon-btn{padding:4px 12px;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Fira Code',monospace;font-size:.62rem;cursor:pointer;transition:all .2s;letter-spacing:.06em;}
+.icon-btn:hover{border-color:var(--cursor);color:var(--cursor);}
+.icon-btn.active{background:rgba(88,166,255,.12);border-color:var(--cursor);color:var(--cursor);}
+
+
+/* ── LAYOUT ── */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* ── SIDEBAR ── */
+.sidebar{width:195px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;}
+.sb-inner{flex:1;overflow-y:auto;padding:10px 0;}
+.sb-inner::-webkit-scrollbar{width:3px;}
+.sb-inner::-webkit-scrollbar-thumb{background:var(--border);}
+.sec-title{font-size:.56rem;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;padding:0 12px 5px;}
+.lang-item{padding:7px 12px;cursor:pointer;font-size:.74rem;color:var(--dim);display:flex;align-items:center;gap:8px;border-left:3px solid transparent;transition:all .15s;user-select:none;}
+.lang-item:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.lang-item.active{color:var(--text);background:rgba(88,166,255,.08);border-left-color:var(--cursor);}
+.licon{width:18px;height:18px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.52rem;font-weight:700;flex-shrink:0;}
+.sep{height:1px;background:var(--border);margin:6px 12px;}
+.mode-row{display:flex;margin:2px 12px 8px;border:1px solid var(--border);border-radius:3px;overflow:hidden;}
+.mt-btn{flex:1;padding:5px 0;text-align:center;font-size:.6rem;color:var(--dim);cursor:pointer;transition:all .15s;user-select:none;}
+.mt-btn:hover{color:var(--text);}
+.mt-btn.active{background:rgba(88,166,255,.15);color:var(--cursor);}
+.snippet-item{padding:5px 12px 5px 22px;cursor:pointer;font-size:.7rem;color:var(--dim);transition:all .15s;display:flex;align-items:center;gap:4px;}
+.snippet-item:hover{color:var(--text);background:rgba(255,255,255,.04);}
+.snippet-item.active{color:var(--cursor);}
+.snippet-item .sn{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.del-btn{opacity:0;font-size:.58rem;color:var(--wrong);cursor:pointer;padding:2px;flex-shrink:0;}
+.snippet-item:hover .del-btn{opacity:1;}
+.add-btn-wrap{padding:8px 12px;border-top:1px solid var(--border);flex-shrink:0;}
+.add-btn{width:100%;padding:6px;background:rgba(88,166,255,.07);border:1px solid rgba(88,166,255,.25);color:var(--cursor);font-family:'Fira Code',monospace;font-size:.65rem;cursor:pointer;transition:all .2s;}
+.add-btn:hover{background:rgba(88,166,255,.16);}
+
+/* ── EDITOR WRAP ── */
+.editor-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0;}
+.editor-header{background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:9px;font-size:.67rem;color:var(--dim);flex-shrink:0;}
+.badge{padding:2px 8px;border-radius:20px;font-size:.58rem;font-weight:600;letter-spacing:.05em;border:1px solid;flex-shrink:0;}
+.badge.idle{color:var(--dim);border-color:var(--border);}
+.badge.typing{color:var(--correct);border-color:var(--correct);background:rgba(63,185,80,.08);}
+.badge.done{color:var(--cursor);border-color:var(--cursor);background:rgba(88,166,255,.08);}
+.warn-chip{padding:2px 8px;border-radius:20px;font-size:.58rem;color:#d29922;border:1px solid #d29922;background:rgba(210,153,34,.08);}
+
+/* ── EDITOR SPLIT ── */
+.editor-split{flex:1;display:flex;overflow:hidden;}
+
+/* ── CODE EDITOR ── */
+.editor{flex:1;display:flex;overflow:auto;padding:16px 0;cursor:text;min-width:0;}
+.editor::-webkit-scrollbar{width:5px;height:5px;}
+.editor::-webkit-scrollbar-thumb{background:var(--border);}
+.linenos{padding:0 10px 0 14px;text-align:right;color:var(--dim);font-size:.78rem;line-height:1.8;user-select:none;flex-shrink:0;border-right:1px solid var(--border);margin-right:14px;}
+.code-area{flex:1;font-size:.84rem;line-height:1.8;padding-right:20px;outline:none;}
+.code-area.code-mode{white-space:pre;}
+.code-area.word-mode{white-space:pre-wrap;font-size:1.25rem;line-height:2.1;padding:24px 32px;}
+
+/* ── CHARS ── */
+/* Default = PENDING = gray. Do NOT set inline color here. */
+.ch{position:relative;display:inline;color:var(--pending);}
+/* correct: inline style will inject syntax color via JS */
+.ch.correct{ /* intentionally empty — color set by inline style */ }
+.ch.wrong{color:var(--wrong)!important;background:rgba(248,81,73,.15);border-radius:2px;}
+.ch.cursor{color:var(--pending);}
+.ch.cursor::before{content:'';position:absolute;left:0;top:2px;bottom:2px;width:2px;background:var(--cursor);animation:blink .85s step-end infinite;border-radius:1px;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:0;}}
+
+/* ── PREVIEW ── */
+.preview-panel{width:0;border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:width .25s ease;flex-shrink:0;}
+.preview-panel.show{width:46%;}
+.preview-hdr{background:var(--bg2);border-bottom:1px solid var(--border);padding:5px 12px;font-size:.62rem;color:var(--dim);flex-shrink:0;display:flex;align-items:center;gap:6px;}
+.preview-hdr::before{content:'◉';color:var(--correct);font-size:.48rem;}
+#previewFrame{flex:1;border:none;background:#fff;}
+
+/* ── BOTTOMBAR ── */
+.bottombar{background:var(--cursor);padding:3px 16px;display:flex;align-items:center;gap:14px;font-size:.62rem;color:var(--bg);flex-shrink:0;flex-wrap:wrap;}
+.bk{background:rgba(0,0,0,.2);padding:1px 4px;border-radius:3px;font-weight:700;}
+
+/* ── MODAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(13,17,23,.93);z-index:300;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border);padding:28px 32px;width:min(520px,92vw);max-height:88vh;overflow-y:auto;animation:popup .28s cubic-bezier(.16,1,.3,1);}
+@keyframes popup{from{transform:scale(.93) translateY(14px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
+.modal h2{font-size:.82rem;margin-bottom:16px;letter-spacing:.08em;}
+.form-row{margin-bottom:11px;}
+.form-label{font-size:.58rem;color:var(--dim);letter-spacing:.15em;text-transform:uppercase;margin-bottom:4px;display:block;}
+.form-input,.form-select{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Fira Code',monospace;font-size:.76rem;padding:7px 9px;outline:none;transition:border-color .2s;}
+.form-input:focus,.form-select:focus{border-color:var(--cursor);}
+.form-textarea{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:'Fira Code',monospace;font-size:.76rem;padding:8px 9px;outline:none;resize:vertical;min-height:150px;line-height:1.6;transition:border-color .2s;}
+.form-textarea:focus{border-color:var(--cursor);}
+.modal-tabs{display:flex;margin-bottom:11px;border-bottom:1px solid var(--border);}
+.mtab{padding:5px 13px;font-size:.66rem;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.mtab.active{color:var(--cursor);border-bottom-color:var(--cursor);}
+.tab-content{display:none;}.tab-content.show{display:block;}
+.file-drop{border:2px dashed var(--border);padding:18px;text-align:center;cursor:pointer;transition:all .2s;font-size:.7rem;color:var(--dim);}
+.file-drop:hover{border-color:var(--cursor);color:var(--cursor);background:rgba(88,166,255,.04);}
+.modal-btns{display:flex;gap:8px;margin-top:16px;}
+.mbtn{flex:1;padding:8px;font-family:'Fira Code',monospace;font-size:.68rem;cursor:pointer;letter-spacing:.08em;border:1px solid;transition:all .2s;}
+.mbtn.ok{background:rgba(63,185,80,.1);border-color:var(--correct);color:var(--correct);}
+.mbtn.ok:hover{background:rgba(63,185,80,.2);}
+.mbtn.cancel{background:transparent;border-color:var(--border);color:var(--dim);}
+.mbtn.cancel:hover{border-color:var(--text);color:var(--text);}
+
+/* ── RESULT ── */
+.result-box{background:var(--bg2);border:1px solid var(--border);padding:38px 46px;width:min(460px,90vw);animation:popup .32s cubic-bezier(.16,1,.3,1);}
+.res-hdr{font-size:.56rem;color:var(--dim);letter-spacing:.28em;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:9px;}
+.res-hdr::after{content:'';flex:1;height:1px;background:var(--border);}
+.res-wpm{font-size:4.2rem;font-weight:600;line-height:1;color:var(--correct);}
+.res-unit{font-size:.62rem;color:var(--dim);letter-spacing:.1em;margin:4px 0 8px;}
+.res-grade{font-size:.66rem;padding:5px 13px;display:inline-block;margin-bottom:18px;border:1px solid;letter-spacing:.14em;}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
+.res-cell{background:var(--bg);border:1px solid var(--border);padding:11px 13px;}
+.res-val{font-size:1.3rem;font-weight:600;color:var(--cursor);}
+.res-lbl{font-size:.54rem;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+.res-btn{width:100%;padding:9px;background:rgba(63,185,80,.1);border:1px solid var(--correct);color:var(--correct);font-family:'Fira Code',monospace;font-size:.68rem;cursor:pointer;letter-spacing:.12em;transition:all .2s;}
+.res-btn:hover{background:rgba(63,185,80,.2);}
+
+#tin{position:fixed;opacity:0;pointer-events:none;width:1px;height:1px;top:0;left:0;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="traffic"><div class="tl r"></div><div class="tl y"></div><div class="tl g"></div></div>
+  <div class="filetab"><div class="fdot"></div><span id="fileTabName">hello.html</span></div>
+  <div class="topstats">
+    <span>WPM <b id="sWpm">0</b></span>
+    <span>정확도 <b id="sAcc">100</b>%</span>
+    <span>시간 <b id="sTime">0</b>s</span>
+    <span>진행 <b id="sProg">0</b>%</span>
+  </div>
+  <div class="tb-right">
+    <span id="previewToggleBtn" class="icon-btn" onclick="togglePreview()" style="display:none">◧ 미리보기</span>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-inner">
+      <div class="sec-title">언어</div>
+      <div class="lang-item active" id="lang-html" onclick="selectLang('html')">
+        <div class="licon" style="background:#f1672520;color:#f16725">HT</div>HTML</div>
+      <div class="lang-item" id="lang-css" onclick="selectLang('css')">
+        <div class="licon" style="background:#2965f120;color:#2965f1">CS</div>CSS</div>
+      <div class="lang-item" id="lang-js" onclick="selectLang('js')">
+        <div class="licon" style="background:#f7df1e20;color:#f7df1e">JS</div>JavaScript</div>
+      <div class="lang-item" id="lang-python" onclick="selectLang('python')">
+        <div class="licon" style="background:#3572a520;color:#3572a5">PY</div>Python</div>
+      <div class="lang-item" id="lang-c" onclick="selectLang('c')">
+        <div class="licon" style="background:#a8b9cc20;color:#a8b9cc">C</div>C 언어</div>
+      <div class="lang-item" id="lang-cpp" onclick="selectLang('cpp')">
+        <div class="licon" style="background:#00599c20;color:#00599c">C+</div>C++</div>
+      <div class="lang-item" id="lang-csharp" onclick="selectLang('csharp')">
+        <div class="licon" style="background:#68217a20;color:#9b4f96">C#</div>C#</div>
+      <div class="lang-item" id="lang-java" onclick="selectLang('java')">
+        <div class="licon" style="background:#e76f0020;color:#e76f00">JV</div>Java</div>
+      <div class="lang-item" id="lang-custom" onclick="selectLang('custom')" style="display:none">
+        <div class="licon" style="background:#d2a8ff20;color:#d2a8ff">★</div>커스텀</div>
+      <div class="sep"></div>
+      <div class="mode-row">
+        <div class="mt-btn active" id="mode-code" onclick="setPracticeMode('code')">코드</div>
+        <div class="mt-btn" id="mode-kw" onclick="setPracticeMode('kw')">단어</div>
+      </div>
+      <div class="sec-title" id="sb-subtitle">스니펫</div>
+      <div id="snippetList"></div>
+    </div>
+    <div class="add-btn-wrap">
+      <button class="add-btn" onclick="openModal()">＋ 스니펫 추가</button>
+    </div>
+  </div>
+
+  <!-- EDITOR WRAP -->
+  <div class="editor-wrap">
+    <div class="editor-header">
+      <div class="badge idle" id="badge">IDLE</div>
+      <span id="hint">클릭하거나 아무 키나 눌러 시작하세요</span>
+      <span id="warnChip" class="warn-chip" style="display:none">⚠ 파일이 잘려 로드됨</span>
+      <span style="margin-left:auto;font-size:.6rem;color:var(--dim)" id="charCount">0 / 0</span>
+    </div>
+    <div class="editor-split">
+      <!-- Code editor -->
+      <div class="editor" id="editorArea" onclick="focusInput()">
+        <div class="linenos" id="lineNos"></div>
+        <div class="code-area code-mode" id="codeArea"></div>
+      </div>
+      <!-- HTML Preview -->
+      <div class="preview-panel" id="previewPanel">
+        <div class="preview-hdr">실시간 HTML 미리보기 (sandbox — 스크립트 차단됨)</div>
+        <iframe id="previewFrame" sandbox="" title="HTML Preview"></iframe>
+      </div>
+    </div>
+    <div class="bottombar">
+      <span><span class="bk">Tab</span> 재시작</span>
+      <span><span class="bk">Ctrl+N</span> 다음</span>
+      <span><span class="bk">Esc</span> 리셋</span>
+      <span style="margin-left:auto;opacity:.75">백스페이스로 수정 가능</span>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="overlay" id="addModal">
+  <div class="modal">
+    <h2>스니펫 추가</h2>
+    <div class="form-row">
+      <label class="form-label">언어</label>
+      <select class="form-select" id="addLang">
+        <option value="html">HTML</option><option value="css">CSS</option>
+        <option value="js">JavaScript</option><option value="python">Python</option>
+        <option value="c">C 언어</option><option value="cpp">C++</option>
+        <option value="csharp">C#</option><option value="java">Java</option>
+        <option value="custom">기타 (커스텀)</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">스니펫 이름</label>
+      <input class="form-input" id="addName" type="text" placeholder="예: 버블 정렬">
+    </div>
+    <div class="modal-tabs">
+      <div class="mtab active" id="tab-btn-direct" onclick="switchTab('direct')">직접 입력</div>
+      <div class="mtab" id="tab-btn-file" onclick="switchTab('file')">파일 불러오기</div>
+    </div>
+    <div class="tab-content show" id="tab-direct">
+      <div class="form-row">
+        <label class="form-label">코드 <span id="charWarning" style="color:var(--wrong);display:none">(5000자 초과 시 잘림)</span></label>
+        <textarea class="form-textarea" id="addCode" placeholder="코드를 붙여넣기하세요..." oninput="checkCodeLen()"></textarea>
+      </div>
+    </div>
+    <div class="tab-content" id="tab-file">
+      <div class="file-drop" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" accept=".html,.htm,.css,.js,.ts,.jsx,.py,.c,.cpp,.h,.cs,.java,.go,.rs,.txt" style="display:none" onchange="onFile(event)">
+        <div style="font-size:1.2rem;margin-bottom:6px">📂</div>
+        <div>클릭해서 파일 선택</div>
+        <div style="margin-top:5px;font-size:.6rem;opacity:.6">.html .css .js .py .c .cpp .cs .java .go .rs .txt 등</div>
+        <div id="fileNameDisp" style="margin-top:8px;color:var(--cursor);font-size:.7rem"></div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="mbtn cancel" onclick="closeModal()">취소</button>
+      <button class="mbtn ok" onclick="saveSnippet()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="overlay" id="resultOverlay">
+  <div class="result-box">
+    <div class="res-hdr" id="resTitle">결과</div>
+    <div class="res-wpm" id="resWpm">0</div>
+    <div class="res-unit">WPM (WORDS PER MINUTE)</div>
+    <div class="res-grade" id="resGrade"></div>
+    <div class="res-grid">
+      <div class="res-cell"><div class="res-val" id="resAcc">0%</div><div class="res-lbl">정확도</div></div>
+      <div class="res-cell"><div class="res-val" id="resTime">0s</div><div class="res-lbl">소요시간</div></div>
+      <div class="res-cell"><div class="res-val" id="resChars">0</div><div class="res-lbl">입력 글자수</div></div>
+      <div class="res-cell"><div class="res-val" id="resErrors">0</div><div class="res-lbl">오타 수</div></div>
+    </div>
+    <button class="res-btn" onclick="closeResult()">↺ 다시 도전하기</button>
+  </div>
+</div>
+
+<textarea id="tin" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+
+<script>
+// ═══════════════════════════════════════════════════
+// DATA — SNIPPETS
+// ═══════════════════════════════════════════════════
+const MAX_CHARS = 5000;
+
+const SNIPPETS = {
+html:[
+{name:"포트폴리오 사이트",file:"portfolio.html",code:`<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>My Portfolio</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',sans-serif;background:#0f0f13;color:#e2e8f0;line-height:1.6}
+    header{background:#1a1a2e;padding:14px 48px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:10}
+    .logo{font-size:1.2rem;font-weight:700;color:#818cf8}
+    nav a{color:#94a3b8;text-decoration:none;margin-left:22px;transition:color .2s}
+    nav a:hover{color:#e2e8f0}
+    .hero{text-align:center;padding:90px 24px;background:linear-gradient(135deg,#1a1a2e,#16213e)}
+    .hero h1{font-size:3rem;font-weight:800;line-height:1.2;margin-bottom:14px}
+    .hero h1 em{color:#818cf8;font-style:normal}
+    .hero p{color:#94a3b8;font-size:1.05rem;margin-bottom:28px}
+    .btn{display:inline-block;padding:11px 30px;background:#818cf8;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;transition:background .2s}
+    .btn:hover{background:#6366f1}
+    .section{padding:70px 48px}
+    .section h2{font-size:1.8rem;margin-bottom:36px;text-align:center}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+    .card{background:#1a1a2e;border:1px solid #2d2d44;border-radius:10px;padding:24px;transition:border-color .2s}
+    .card:hover{border-color:#818cf8}
+    .card h3{color:#818cf8;margin-bottom:8px}
+    .card p{color:#64748b;font-size:.9rem}
+    .skills{display:flex;flex-wrap:wrap;gap:8px;padding:0 48px 40px}
+    .skill{padding:6px 14px;background:#1a1a2e;border:1px solid #2d2d44;border-radius:20px;font-size:.85rem;color:#94a3b8}
+    .contact{background:#1a1a2e;text-align:center;padding:70px 24px}
+    .contact p{color:#64748b;margin-bottom:8px}
+    .contact a{color:#818cf8;text-decoration:none}
+    footer{padding:22px;text-align:center;color:#374151;font-size:.82rem;border-top:1px solid #1e2030}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">devPortfolio</div>
+    <nav>
+      <a href="#about">소개</a>
+      <a href="#projects">프로젝트</a>
+      <a href="#contact">연락처</a>
+    </nav>
+  </header>
+  <section class="hero" id="about">
+    <h1>안녕하세요,<br><em>웹 개발자</em>입니다</h1>
+    <p>HTML · CSS · JavaScript로 아름다운 웹을 만듭니다</p>
+    <a href="#projects" class="btn">프로젝트 보기</a>
+  </section>
+  <section class="section" id="projects">
+    <h2>프로젝트</h2>
+    <div class="cards">
+      <div class="card">
+        <h3>쇼핑몰 웹사이트</h3>
+        <p>React와 Node.js로 만든 풀스택 쇼핑몰입니다.</p>
+      </div>
+      <div class="card">
+        <h3>날씨 대시보드</h3>
+        <p>OpenAPI를 활용한 실시간 날씨 정보 앱입니다.</p>
+      </div>
+      <div class="card">
+        <h3>포트폴리오 사이트</h3>
+        <p>이 사이트처럼 HTML/CSS만으로 제작했습니다.</p>
+      </div>
+    </div>
+  </section>
+  <section>
+    <div class="skills">
+      <span class="skill">HTML5</span>
+      <span class="skill">CSS3</span>
+      <span class="skill">JavaScript</span>
+      <span class="skill">React</span>
+      <span class="skill">Node.js</span>
+      <span class="skill">Python</span>
+      <span class="skill">Git</span>
+    </div>
+  </section>
+  <section class="contact" id="contact">
+    <h2>연락하기</h2>
+    <p>새로운 기회나 협업 제안을 환영합니다!</p>
+    <p><a href="mailto:dev@example.com">dev@example.com</a></p>
+  </section>
+  <footer>
+    <p>© 2025 devPortfolio. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>`},
+{name:"폼(Form)",file:"form.html",code:`<form action="/submit" method="post">
+  <label for="name">이름:</label>
+  <input type="text" id="name" name="name"
+         placeholder="홍길동">
+
+  <label for="email">이메일:</label>
+  <input type="email" id="email" name="email"
+         placeholder="user@example.com">
+
+  <label for="msg">메시지:</label>
+  <textarea id="msg" name="msg" rows="4"></textarea>
+
+  <button type="submit">제출</button>
+  <button type="reset">초기화</button>
+</form>`},
+{name:"시맨틱 레이아웃",file:"semantic.html",code:`<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width">
+  <title>시맨틱 HTML</title>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/">홈</a>
+      <a href="/about">소개</a>
+      <a href="/blog">블로그</a>
+    </nav>
+  </header>
+  <main>
+    <article>
+      <h1>글 제목</h1>
+      <p>본문 내용입니다.</p>
+      <aside>관련 링크</aside>
+    </article>
+  </main>
+  <footer>
+    <p>Copyright &copy; 2025</p>
+  </footer>
+</body>
+</html>`},
+],
+css:[
+{name:"기본 리셋",file:"reset.css",code:`* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background-color: #f5f5f5;
+  color: #333333;
+  line-height: 1.6;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}`},
+{name:"Flexbox 레이아웃",file:"flex.css",code:`.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px;
+}
+
+.card {
+  flex: 1 1 280px;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}`},
+{name:"Grid 레이아웃",file:"grid.css",code:`.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 20px;
+}
+
+.grid-header {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}`},
+{name:"애니메이션",file:"anim.css",code:`.btn {
+  padding: 12px 28px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(79, 70, 229, 0.4);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}`},
+{name:"CSS 변수",file:"theme.css",code:`:root {
+  --primary: #4f46e5;
+  --secondary: #06b6d4;
+  --bg: #ffffff;
+  --text: #1e293b;
+  --radius: 8px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] {
+  --bg: #0f172a;
+  --text: #e2e8f0;
+}
+
+.card {
+  background: var(--bg);
+  color: var(--text);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}`},
+],
+js:[
+{name:"변수와 함수",file:"basics.js",code:`// 변수 선언
+const name = "홍길동";
+let age = 20;
+
+// 화살표 함수
+const greet = (person) => {
+  return "안녕하세요, " + person + "!";
+};
+
+// 템플릿 리터럴
+const info = \`이름: \${name}, 나이: \${age}\`;
+
+console.log(greet(name));
+console.log(info);`},
+{name:"배열 메서드",file:"array.js",code:`const students = [
+  { name: "철수", score: 85 },
+  { name: "영희", score: 92 },
+  { name: "민준", score: 78 },
+];
+
+const passed = students.filter(s => s.score >= 80);
+const names = passed.map(s => s.name);
+const avg = students.reduce((sum, s) => sum + s.score, 0)
+            / students.length;
+
+console.log("합격:", names);
+console.log("평균:", avg.toFixed(1));`},
+{name:"클래스",file:"class.js",code:`class Animal {
+  constructor(name, sound) {
+    this.name = name;
+    this.sound = sound;
+  }
+  speak() {
+    return \`\${this.name}: \${this.sound}!\`;
+  }
+}
+
+class Dog extends Animal {
+  constructor(name) {
+    super(name, "멍멍");
+    this.tricks = [];
+  }
+  learn(trick) {
+    this.tricks.push(trick);
+    console.log(\`\${this.name}이 \${trick}을 배웠어요!\`);
+  }
+}
+
+const dog = new Dog("바둑이");
+dog.learn("앉아");
+console.log(dog.speak());`},
+{name:"비동기/fetch",file:"async.js",code:`async function getUser(id) {
+  try {
+    const res = await fetch(
+      \`https://jsonplaceholder.typicode.com/users/\${id}\`
+    );
+    if (!res.ok) {
+      throw new Error("HTTP 오류: " + res.status);
+    }
+    const user = await res.json();
+    console.log("이름:", user.name);
+    return user;
+  } catch (err) {
+    console.error("에러:", err.message);
+  }
+}
+
+getUser(1);`},
+{name:"이벤트 처리",file:"events.js",code:`const btn = document.getElementById("myBtn");
+const box = document.getElementById("box");
+
+btn.addEventListener("click", () => {
+  box.style.background = "#4f46e5";
+  box.textContent = "클릭됨!";
+});
+
+box.addEventListener("mouseover", (e) => {
+  e.target.style.opacity = "0.8";
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    console.log("엔터 키 눌림");
+  }
+});`},
+],
+python:[
+{name:"기본 문법",file:"basics.py",code:`# 변수와 출력
+name = "홍길동"
+age = 20
+
+print(f"이름: {name}, 나이: {age}")
+
+if age >= 18:
+    print("성인입니다.")
+elif age >= 14:
+    print("청소년입니다.")
+else:
+    print("어린이입니다.")
+
+fruits = ["사과", "바나나", "딸기"]
+for i, fruit in enumerate(fruits):
+    print(f"{i+1}. {fruit}")`},
+{name:"클래스",file:"class.py",code:`class BankAccount:
+    interest_rate = 0.03
+
+    def __init__(self, owner, balance=0):
+        self.owner = owner
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+        print(f"{amount}원 입금. 잔액: {self.balance}원")
+
+    def withdraw(self, amount):
+        if amount > self.balance:
+            print("잔액이 부족합니다.")
+        else:
+            self.balance -= amount
+            print(f"{amount}원 출금.")
+
+account = BankAccount("홍길동", 10000)
+account.deposit(5000)
+account.withdraw(3000)`},
+{name:"리스트 컴프리헨션",file:"listcomp.py",code:`# 기본
+squares = [x**2 for x in range(1, 11)]
+print(squares)
+
+# 조건 필터
+evens = [x for x in range(20) if x % 2 == 0]
+print(evens)
+
+# 중첩
+matrix = [[i * j for j in range(1, 4)]
+          for i in range(1, 4)]
+for row in matrix:
+    print(row)
+
+# 딕셔너리 컴프리헨션
+words = ["apple", "banana", "cherry"]
+lengths = {w: len(w) for w in words}
+print(lengths)`},
+{name:"예외 처리",file:"exception.py",code:`def divide(a, b):
+    if b == 0:
+        raise ZeroDivisionError("0으로 나눌 수 없습니다.")
+    return a / b
+
+try:
+    result = divide(10, 2)
+    print(f"결과: {result}")
+    divide(10, 0)
+except ZeroDivisionError as e:
+    print(f"오류: {e}")
+except TypeError as e:
+    print(f"타입 오류: {e}")
+finally:
+    print("계산 완료")`},
+],
+c:[
+{name:"Hello World",file:"hello.c",code:`#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\\n");
+
+    int num = 42;
+    float pi = 3.14159f;
+
+    printf("num = %d\\n", num);
+    printf("pi = %.5f\\n", pi);
+
+    return 0;
+}`},
+{name:"조건문과 반복문",file:"control.c",code:`#include <stdio.h>
+
+int main() {
+    int score = 85;
+
+    if (score >= 90) {
+        printf("A 학점\\n");
+    } else if (score >= 80) {
+        printf("B 학점\\n");
+    } else {
+        printf("C 이하\\n");
+    }
+
+    int sum = 0;
+    for (int i = 1; i <= 10; i++) {
+        sum += i;
+    }
+    printf("1~10 합계: %d\\n", sum);
+    return 0;
+}`},
+{name:"함수와 재귀",file:"func.c",code:`#include <stdio.h>
+
+int factorial(int n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+int fib(int n) {
+    if (n <= 1) return n;
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    for (int i = 1; i <= 7; i++) {
+        printf("%d! = %d\\n", i, factorial(i));
+    }
+    printf("fib(10) = %d\\n", fib(10));
+    return 0;
+}`},
+{name:"구조체",file:"struct.c",code:`#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    char name[50];
+    int age;
+    float gpa;
+} Student;
+
+void print_student(Student s) {
+    printf("이름: %s\\n", s.name);
+    printf("나이: %d\\n", s.age);
+    printf("학점: %.2f\\n", s.gpa);
+}
+
+int main() {
+    Student s1;
+    strcpy(s1.name, "홍길동");
+    s1.age = 21;
+    s1.gpa = 3.85;
+    print_student(s1);
+    return 0;
+}`},
+],
+cpp:[
+{name:"Hello World",file:"hello.cpp",code:`#include <iostream>
+#include <string>
+using namespace std;
+
+int main() {
+    string name = "홍길동";
+    int age = 20;
+
+    cout << "이름: " << name << endl;
+    cout << "나이: " << age << endl;
+    cout << "Hello, World!" << endl;
+
+    return 0;
+}`},
+{name:"클래스",file:"class.cpp",code:`#include <iostream>
+#include <string>
+using namespace std;
+
+class Animal {
+protected:
+    string name;
+    string sound;
+public:
+    Animal(string n, string s) : name(n), sound(s) {}
+    virtual void speak() {
+        cout << name << ": " << sound << "!" << endl;
+    }
+};
+
+class Dog : public Animal {
+public:
+    Dog(string n) : Animal(n, "멍멍") {}
+    void fetch() {
+        cout << name << "이 공을 가져옵니다!" << endl;
+    }
+};
+
+int main() {
+    Dog dog("바둑이");
+    dog.speak();
+    dog.fetch();
+    return 0;
+}`},
+{name:"STL 벡터",file:"vector.cpp",code:`#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    vector<int> nums = {5, 3, 1, 4, 2};
+
+    // 정렬
+    sort(nums.begin(), nums.end());
+
+    for (int n : nums) {
+        cout << n << " ";
+    }
+    cout << endl;
+
+    nums.push_back(6);
+    cout << "크기: " << nums.size() << endl;
+    cout << "첫 요소: " << nums.front() << endl;
+    cout << "마지막: " << nums.back() << endl;
+
+    return 0;
+}`},
+{name:"포인터와 참조",file:"pointer.cpp",code:`#include <iostream>
+using namespace std;
+
+void swapByPtr(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+void swapByRef(int &a, int &b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+int main() {
+    int x = 10, y = 20;
+
+    swapByPtr(&x, &y);
+    cout << "포인터: " << x << ", " << y << endl;
+
+    swapByRef(x, y);
+    cout << "참조: " << x << ", " << y << endl;
+
+    return 0;
+}`},
+],
+csharp:[
+{name:"Hello World",file:"hello.cs",code:`using System;
+
+class Program {
+    static void Main(string[] args) {
+        string name = "홍길동";
+        int age = 20;
+
+        Console.WriteLine($"이름: {name}");
+        Console.WriteLine($"나이: {age}");
+        Console.WriteLine("Hello, World!");
+    }
+}`},
+{name:"클래스와 프로퍼티",file:"class.cs",code:`using System;
+
+class Person {
+    public string Name { get; set; }
+    public int Age { get; private set; }
+
+    public Person(string name, int age) {
+        Name = name;
+        Age = age;
+    }
+
+    public void Greet() {
+        Console.WriteLine($"안녕하세요, {Name}입니다.");
+    }
+
+    public bool IsAdult => Age >= 18;
+}
+
+class Program {
+    static void Main() {
+        var person = new Person("홍길동", 20);
+        person.Greet();
+        Console.WriteLine($"성인 여부: {person.IsAdult}");
+    }
+}`},
+{name:"LINQ",file:"linq.cs",code:`using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program {
+    static void Main() {
+        var scores = new List<int> { 85, 92, 78, 95, 60 };
+
+        // 80점 이상 필터링
+        var passed = scores.Where(s => s >= 80).ToList();
+
+        // 평균
+        double avg = scores.Average();
+
+        // 최고점
+        int max = scores.Max();
+
+        Console.WriteLine($"합격 점수: {string.Join(", ", passed)}");
+        Console.WriteLine($"평균: {avg:F1}");
+        Console.WriteLine($"최고점: {max}");
+    }
+}`},
+{name:"async/await",file:"async.cs",code:`using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+
+class Program {
+    static readonly HttpClient client = new HttpClient();
+
+    static async Task<string> FetchData(string url) {
+        try {
+            HttpResponseMessage response = await client.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            string data = await response.Content.ReadAsStringAsync();
+            return data;
+        } catch (HttpRequestException e) {
+            Console.WriteLine($"오류: {e.Message}");
+            return null;
+        }
+    }
+
+    static async Task Main() {
+        string url = "https://api.example.com/data";
+        string result = await FetchData(url);
+        Console.WriteLine(result);
+    }
+}`},
+],
+java:[
+{name:"Hello World",file:"Hello.java",code:`public class Hello {
+    public static void main(String[] args) {
+        String name = "홍길동";
+        int age = 20;
+
+        System.out.println("이름: " + name);
+        System.out.println("나이: " + age);
+        System.out.println("Hello, World!");
+    }
+}`},
+{name:"클래스와 상속",file:"Animal.java",code:`public class Animal {
+    protected String name;
+    protected String sound;
+
+    public Animal(String name, String sound) {
+        this.name = name;
+        this.sound = sound;
+    }
+
+    public void speak() {
+        System.out.println(name + ": " + sound + "!");
+    }
+}
+
+class Dog extends Animal {
+    public Dog(String name) {
+        super(name, "멍멍");
+    }
+
+    public void fetch() {
+        System.out.println(name + "이 공을 가져옵니다!");
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Dog dog = new Dog("바둑이");
+        dog.speak();
+        dog.fetch();
+    }
+}`},
+{name:"ArrayList",file:"ArrayList.java",code:`import java.util.ArrayList;
+import java.util.Collections;
+
+public class Main {
+    public static void main(String[] args) {
+        ArrayList<Integer> nums = new ArrayList<>();
+        nums.add(5);
+        nums.add(3);
+        nums.add(1);
+        nums.add(4);
+        nums.add(2);
+
+        Collections.sort(nums);
+
+        for (int n : nums) {
+            System.out.print(n + " ");
+        }
+        System.out.println();
+        System.out.println("크기: " + nums.size());
+    }
+}`},
+{name:"인터페이스",file:"Interface.java",code:`interface Drawable {
+    void draw();
+    default String getColor() {
+        return "black";
+    }
+}
+
+interface Resizable {
+    void resize(double factor);
+}
+
+class Circle implements Drawable, Resizable {
+    private double radius;
+
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public void draw() {
+        System.out.println("원 그리기, 반지름: " + radius);
+    }
+
+    @Override
+    public void resize(double factor) {
+        radius *= factor;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Circle c = new Circle(5.0);
+        c.draw();
+        c.resize(2.0);
+        c.draw();
+    }
+}`},
+],
+custom:[],
+};
+
+// ═══════════════════════════════════════════════════
+// DATA — KEYWORDS
+// ═══════════════════════════════════════════════════
+const KEYWORDS = {
+  html:['html','head','body','div','span','h1','h2','h3','p','a','img','input','button','form','table','tr','td','th','thead','tbody','ul','ol','li','nav','header','footer','main','section','article','aside','title','meta','link','script','style','class','id','href','src','alt','type','name','value','placeholder','action','method','label','select','option','textarea','canvas','video','audio','figure','figcaption','strong','em','br','hr','iframe','doctype'],
+  css:['display','flex','grid','block','inline','position','relative','absolute','fixed','sticky','margin','padding','border','width','height','color','background','font-size','font-weight','font-family','text-align','justify-content','align-items','gap','flex-wrap','overflow','z-index','opacity','transform','transition','animation','border-radius','box-shadow','cursor','pointer','media','hover','focus','active','inherit','auto','none','center','flex-start','flex-end','space-between','space-around','max-width','min-height','line-height','letter-spacing','text-decoration','list-style','white-space','overflow-x','overflow-y','grid-template-columns','grid-column','grid-row','border-collapse','box-sizing'],
+  js:['const','let','var','function','return','if','else','for','while','do','class','extends','new','this','super','import','export','default','async','await','Promise','try','catch','throw','typeof','instanceof','null','undefined','true','false','Array','Object','String','Number','Boolean','Math','Date','JSON','console','document','window','fetch','setTimeout','addEventListener','querySelector','forEach','map','filter','reduce','find','includes','push','pop','shift','splice','slice','sort','join','split','parseInt','parseFloat','toString','length','prototype'],
+  python:['def','class','return','if','elif','else','for','while','import','from','as','with','in','not','and','or','True','False','None','lambda','yield','try','except','finally','raise','pass','break','continue','global','print','len','range','list','dict','tuple','set','str','int','float','bool','type','isinstance','open','super','self','enumerate','zip','map','filter','sorted','reversed','append','extend','remove','pop','keys','values','items','format','strip','split','join','replace','lower','upper'],
+  c:['int','float','double','char','void','return','if','else','for','while','do','switch','case','break','continue','default','struct','union','typedef','enum','const','static','extern','sizeof','NULL','malloc','free','calloc','printf','scanf','fprintf','fopen','fclose','strcmp','strcpy','strlen','strcat','include','define','ifdef','ifndef','endif','main','short','long','unsigned','signed'],
+  cpp:['int','float','double','char','bool','string','void','return','class','struct','public','private','protected','virtual','override','final','template','typename','namespace','using','new','delete','nullptr','const','static','inline','auto','vector','map','set','pair','cout','cin','endl','include','std','push_back','size','begin','end','sort','find','this','friend','operator','reference','pointer','constructor','destructor'],
+  csharp:['int','float','double','char','bool','string','void','return','class','struct','interface','enum','public','private','protected','static','virtual','override','abstract','sealed','new','this','base','null','true','false','var','using','namespace','async','await','Task','List','Dictionary','Console','WriteLine','ReadLine','foreach','in','try','catch','finally','throw','get','set','where','select','from','orderby','delegate','event','Action','Func','LINQ','property','attribute'],
+  java:['int','float','double','char','boolean','void','return','class','interface','extends','implements','public','private','protected','static','final','abstract','new','this','super','null','true','false','import','package','String','ArrayList','HashMap','LinkedList','Scanner','System','println','try','catch','finally','throw','throws','for','while','if','else','switch','case','break','continue','instanceof','override','generic','iterator','comparable','serializable'],
+};
+
+// ═══════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════
+let lang = 'html', idx = 0, practiceMode = 'code';
+let charMap = [];
+let spans = []; // spans[i] → span element for charMap[i], null for \n
+let typedIndex = 0;
+let wrongSet = new Set();
+let totalTyped = 0, errors = 0;
+let startTime = null, timerInt = null;
+let isRunning = false, isFinished = false, isComposing = false;
+let previewVisible = false, previewTimer = null;
+
+// ═══════════════════════════════════════════════════
+// TOKENIZER
+// ═══════════════════════════════════════════════════
+function tokenize(code, l) {
+  const lines = code.split('\n'), res = [];
+  for (let li = 0; li < lines.length; li++) {
+    for (const tok of tokenizeLine(lines[li], l))
+      for (const ch of tok.text) res.push({char:ch,cls:tok.cls});
+    if (li < lines.length-1) res.push({char:'\n',cls:'punc'});
+  }
+  return res;
+}
+function tokenizeLine(line, l) {
+  const t=[];
+  if (l==='html') {
+    let i=0;
+    while(i<line.length){
+      if(line.slice(i,i+4)==='<!--'){const e=line.indexOf('-->',i);const j=e>=0?e+3:line.length;t.push({text:line.slice(i,j),cls:'cmt'});i=j;}
+      else if(line[i]==='<'){let j=i+1;while(j<line.length&&line[j]!=='>') j++;parseHtmlTag(line.slice(i,j+1),t);i=j+1;}
+      else{let j=i;while(j<line.length&&line[j]!=='<') j++;t.push({text:line.slice(i,j),cls:'punc'});i=j;}
+    }
+  } else if(l==='css'){parseCss(line,t);}
+  else if(l==='js'||l==='custom'){parseJs(line,t);}
+  else if(l==='python'){parsePy(line,t);}
+  else if(l==='c'||l==='cpp'){parseC(line,t,l);}
+  else if(l==='csharp'){parseCs(line,t);}
+  else if(l==='java'){parseJava(line,t);}
+  else t.push({text:line,cls:'punc'});
+  if(!t.length) t.push({text:line,cls:'punc'});
+  return t;
+}
+function parseHtmlTag(tag,t){
+  const m=tag.match(/^(<\/?)(\w[\w-]*)(.*)(\/?>\s*)$/s);
+  if(!m){t.push({text:tag,cls:'tag'});return;}
+  t.push({text:m[1]+m[2],cls:'tag'});
+  let ai=0,a=m[3];
+  while(ai<a.length){
+    const sp=a.slice(ai).match(/^(\s+)/);if(sp){t.push({text:sp[1],cls:'punc'});ai+=sp[1].length;continue;}
+    const vm=a.slice(ai).match(/^(=)("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/);if(vm){t.push({text:vm[1],cls:'punc'});t.push({text:vm[2],cls:'val'});ai+=vm[0].length;continue;}
+    const nm=a.slice(ai).match(/^([\w-:.@#]+)/);if(nm){t.push({text:nm[1],cls:'attr'});ai+=nm[1].length;continue;}
+    t.push({text:a[ai],cls:'punc'});ai++;
+  }
+  t.push({text:m[4],cls:'tag'});
+}
+function srx(text,rx,cls,out,fb){
+  const r=new RegExp(rx.source,'g');let last=0,m;
+  while((m=r.exec(text))!==null){if(m.index>last)fb(text.slice(last,m.index));out.push({text:m[0],cls});last=r.lastIndex;}
+  if(last<text.length)fb(text.slice(last));
+}
+const RJS=/\b(const|let|var|function|return|if|else|for|while|do|class|extends|new|this|super|typeof|instanceof|import|export|default|async|await|try|catch|finally|throw|true|false|null|undefined|of|in|switch|case|break|continue)\b/g;
+const RPY=/\b(def|class|return|if|elif|else|for|while|import|from|as|with|in|not|and|or|True|False|None|lambda|yield|try|except|finally|raise|pass|break|continue|global|nonlocal|assert|del|is|print|self|super|len|range)\b/g;
+const RC=/\b(int|float|double|char|void|return|if|else|for|while|do|switch|case|break|continue|default|struct|union|typedef|enum|const|static|extern|sizeof|NULL|malloc|free|calloc|realloc|printf|scanf|main|include|define|ifdef|ifndef|endif|short|long|unsigned|signed)\b/g;
+const RCPP=/\b(int|float|double|char|bool|void|return|class|struct|public|private|protected|virtual|override|final|template|typename|namespace|using|new|delete|nullptr|const|static|inline|auto|cout|cin|endl|this|friend|operator|if|else|for|while|do|switch|case|break|continue|include|true|false)\b/g;
+const RCS=/\b(int|float|double|char|bool|string|void|return|class|struct|interface|enum|public|private|protected|static|virtual|override|abstract|sealed|new|this|base|null|true|false|var|using|namespace|async|await|foreach|in|try|catch|finally|throw|if|else|for|while|do|switch|case|break|continue|get|set|delegate|event|out|ref|params)\b/g;
+const RJV=/\b(int|float|double|char|boolean|void|return|class|interface|extends|implements|public|private|protected|static|final|abstract|new|this|super|null|true|false|import|package|try|catch|finally|throw|throws|for|while|if|else|switch|case|break|continue|instanceof|do|String|System|ArrayList|HashMap)\b/g;
+function parseJs(line,t){if(line.trimStart().startsWith('//')) {t.push({text:line,cls:'cmt'});return;} srx(line,RJS,'kw',t,p=>srx(p,/(`(?:[^`\\]|\\.)*`|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/g,'str',t,p2=>srx(p2,/\b(\d+\.?\d*)\b/g,'num',t,p3=>t.push({text:p3,cls:'punc'}))));}
+function parsePy(line,t){if(line.trimStart().startsWith('#')) {t.push({text:line,cls:'cmt'});return;} srx(line,RPY,'kw',t,p=>srx(p,/(f?"(?:[^"\\]|\\.)*"|f?'(?:[^'\\]|\\.)*')/g,'str',t,p2=>srx(p2,/\b(\d+\.?\d*)\b/g,'num',t,p3=>t.push({text:p3,cls:'punc'}))));}
+function parseC(line,t,l){const tr=line.trimStart();if(tr.startsWith('//')) {t.push({text:line,cls:'cmt'});return;} if(tr.startsWith('#')) {t.push({text:line,cls:'kw'});return;} const rx=l==='cpp'?RCPP:RC; srx(line,rx,'kw',t,p=>srx(p,/("(?:[^"\\]|\\.)*")/g,'str',t,p2=>srx(p2,/\b(\d+\.?\d*)\b/g,'num',t,p3=>t.push({text:p3,cls:'punc'}))));}
+function parseCs(line,t){const tr=line.trimStart();if(tr.startsWith('//')) {t.push({text:line,cls:'cmt'});return;} if(tr.startsWith('[')) {t.push({text:line,cls:'fn'});return;} srx(line,RCS,'kw',t,p=>srx(p,/("(?:[^"\\]|\\.)*"|\$"[^"]*")/g,'str',t,p2=>srx(p2,/\b(\d+\.?\d*)\b/g,'num',t,p3=>t.push({text:p3,cls:'punc'}))));}
+function parseJava(line,t){const tr=line.trimStart();if(tr.startsWith('//')) {t.push({text:line,cls:'cmt'});return;} if(tr.startsWith('@')) {t.push({text:line,cls:'fn'});return;} srx(line,RJV,'kw',t,p=>srx(p,/("(?:[^"\\]|\\.)*")/g,'str',t,p2=>srx(p2,/\b(\d+\.?\d*)\b/g,'num',t,p3=>t.push({text:p3,cls:'punc'}))));}
+function parseCss(line,t){const m=line.match(/^(\s*)([\w-]+)(\s*:\s*)(.+?)(;?\s*)$/);if(m){t.push({text:m[1],cls:'punc'});t.push({text:m[2],cls:'attr'});t.push({text:m[3],cls:'punc'});t.push({text:m[4],cls:'val'});t.push({text:m[5],cls:'punc'});}else t.push({text:line,cls:'fn'});}
+
+// ═══════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════
+function renderEditor() {
+  const ca = document.getElementById('codeArea');
+  const ln = document.getElementById('lineNos');
+  const isCode = practiceMode === 'code';
+
+  // CSS mode
+  ca.className = 'code-area ' + (isCode ? 'code-mode' : 'word-mode');
+  ln.style.display = isCode ? '' : 'none';
+
+  // Build HTML string — fast single innerHTML write
+  let html = '';
+  for (let i = 0; i < charMap.length; i++) {
+    const {char} = charMap[i];
+    if (char === '\n') {
+      html += `<br data-i="${i}">`;
+    } else {
+      const safe = char === ' ' ? ' ' 
+           : char === '<' ? '&lt;'
+           : char === '>' ? '&gt;'
+           : char === '&' ? '&amp;'
+           : char === '"' ? '&quot;' : char;
+      html += `<span class="ch" data-i="${i}">${safe}</span>`;
+    }
+  }
+  ca.innerHTML = html;
+
+
+  // Cache span references — O(n) once
+  spans = new Array(charMap.length).fill(null);
+  ca.querySelectorAll('span[data-i]').forEach(sp => {
+    spans[parseInt(sp.dataset.i)] = sp;
+  });
+
+  // Initial state: all pending (no inline style = gray from CSS)
+  // Nothing to do since .ch default color = var(--pending)
+
+  // Cursor at 0
+  if (spans[0]) spans[0].classList.add('cursor');
+
+  // Line numbers
+  if (isCode) {
+    const lc = charMap.filter(c=>c.char==='\n').length + 1;
+    ln.innerHTML = Array.from({length:lc},(_,i)=>`<div>${i+1}</div>`).join('');
+  }
+
+  document.getElementById('charCount').textContent = `0 / ${charMap.length}`;
+  document.getElementById('sProg').textContent = '0';
+}
+
+function updateSpan(i) {
+  const sp = spans[i];
+  if (!sp || i >= charMap.length) return;
+  // Always start clean
+  sp.style.color = '';
+  if (i < typedIndex) {
+    if (wrongSet.has(i)) {
+      sp.className = 'ch wrong'; // CSS: red, !important
+    } else {
+      sp.className = 'ch correct'; // inline style sets syntax color below
+      sp.style.color = `var(--${charMap[i].cls})`;
+    }
+  } else if (i === typedIndex) {
+    sp.className = 'ch cursor'; // CSS: gray (var(--pending)) + blink ::before
+  } else {
+    sp.className = 'ch'; // CSS: gray (var(--pending))
+  }
+}
+
+function renderSidebar() {
+  const list = document.getElementById('snippetList');
+  list.innerHTML = '';
+  const isKw = practiceMode === 'kw';
+  document.getElementById('sb-subtitle').textContent = isKw ? '단어 세트' : '스니펫';
+
+  if (isKw) {
+    // Show keyword counts as "snippets"
+    const sets = [{name:'랜덤 30단어'},{name:'랜덤 50단어'},{name:'랜덤 80단어'}];
+    sets.forEach((s,i) => {
+      const d=document.createElement('div');
+      d.className='snippet-item'+(i===idx?' active':'');
+      d.innerHTML=`<span class="sn">${s.name}</span>`;
+      d.onclick=()=>{idx=i;load();};
+      list.appendChild(d);
+    });
+  } else {
+    (SNIPPETS[lang]||[]).forEach((s,i)=>{
+      const d=document.createElement('div');
+      d.className='snippet-item'+(i===idx?' active':'');
+      const nm=document.createElement('span'); nm.className='sn'; nm.textContent=s.name;
+      d.appendChild(nm);
+      if(s._custom){
+        const db=document.createElement('span'); db.className='del-btn'; db.textContent='✕';
+        db.onclick=e=>{e.stopPropagation();delSnippet(i);}; d.appendChild(db);
+      }
+      d.onclick=()=>{idx=i;load();};
+      list.appendChild(d);
+    });
+  }
+
+  // Custom lang visibility
+  document.getElementById('lang-custom').style.display = SNIPPETS.custom.length>0?'':'none';
+  // Preview toggle visibility
+  document.getElementById('previewToggleBtn').style.display = (lang==='html'&&practiceMode==='code') ? '' : 'none';
+  if (lang!=='html'||practiceMode!=='kw') {
+    if (lang!=='html') hidePreview();
+  }
+}
+
+function hidePreview() {
+  previewVisible = false;
+  document.getElementById('previewPanel').classList.remove('show');
+  document.getElementById('previewToggleBtn').classList.remove('active');
+}
+
+// ═══════════════════════════════════════════════════
+// GAME
+// ═══════════════════════════════════════════════════
+function load() {
+  // Build charMap
+  let code='', fileName='';
+  const warn = document.getElementById('warnChip');
+  warn.style.display = 'none';
+
+  if (practiceMode === 'kw') {
+    const counts=[30,50,80]; const cnt=counts[idx]||30;
+    const kws = KEYWORDS[lang]||[];
+    const pool=[...kws].sort(()=>Math.random()-.5);
+    while(pool.length<cnt) pool.push(...[...kws].sort(()=>Math.random()-.5));
+    code = pool.slice(0,cnt).join(' ');
+    fileName = lang+'_keywords.txt';
+  } else {
+    const snips=SNIPPETS[lang]||[];
+    if(!snips.length){
+      document.getElementById('codeArea').innerHTML='<span style="color:var(--dim);padding:20px">스니펫 없음. ＋ 추가해보세요!</span>';
+      return;
+    }
+    if(idx>=snips.length) idx=0;
+    const s=snips[idx];
+    code = s.code;
+    fileName = s.file||s.name;
+    // Size limit
+    if (code.length > MAX_CHARS) {
+      code = code.slice(0, MAX_CHARS);
+      warn.style.display = '';
+    }
+  }
+
+  stopTimer();
+  charMap = tokenize(code, practiceMode==='kw'?'__kw':lang);
+  // For keyword mode, override cls to 'punc' for spaces, 'kw' for words
+  if (practiceMode==='kw') {
+    charMap = tokenize(code, lang); // use real lang tokenizer for keyword coloring
+  }
+
+  typedIndex=0; wrongSet.clear(); totalTyped=0; errors=0;
+  startTime=null; isRunning=false; isFinished=false;
+  document.getElementById('tin').value='';
+  document.getElementById('fileTabName').textContent=fileName;
+  ['sWpm','sAcc','sTime'].forEach(id=>document.getElementById(id).textContent=id==='sAcc'?'100':'0');
+  setBadge('idle','클릭하거나 아무 키나 눌러 시작하세요');
+  document.getElementById('resultOverlay').classList.remove('show');
+
+  renderEditor();
+  renderSidebar();
+
+  // Update preview if visible
+  if (lang==='html' && previewVisible) setPreviewContent('');
+}
+
+function selectLang(l) {
+  lang=l; idx=0;
+  document.querySelectorAll('.lang-item').forEach(el=>el.classList.remove('active'));
+  document.getElementById('lang-'+l).classList.add('active');
+  if(l!=='html') hidePreview();
+  load();
+}
+
+function setPracticeMode(m) {
+  practiceMode=m; idx=0;
+  document.getElementById('mode-code').classList.toggle('active',m==='code');
+  document.getElementById('mode-kw').classList.toggle('active',m==='kw');
+  if(m==='kw') hidePreview();
+  load();
+}
+
+function focusInput() { document.getElementById('tin').focus(); }
+
+function setBadge(type,hint) {
+  const b=document.getElementById('badge');
+  b.className='badge '+type; b.textContent=type.toUpperCase();
+  document.getElementById('hint').textContent=hint;
+}
+
+function stopTimer() { if(timerInt){clearInterval(timerInt);timerInt=null;} }
+
+function startGame() {
+  startTime=Date.now(); isRunning=true;
+  setBadge('typing','타이핑 중...');
+  timerInt=setInterval(()=>{
+    const e=Math.floor((Date.now()-startTime)/1000);
+    document.getElementById('sTime').textContent=e;
+    const wpm=e>0?Math.round((totalTyped/5)/(e/60)):0;
+    document.getElementById('sWpm').textContent=wpm;
+    const acc=totalTyped>0?Math.round(((totalTyped-errors)/totalTyped)*100):100;
+    document.getElementById('sAcc').textContent=acc;
+  },400);
+}
+
+function finishGame() {
+  isFinished=true; isRunning=false; stopTimer();
+  setBadge('done','완료!');
+  const e=Math.max(1,Math.floor((Date.now()-startTime)/1000));
+  const wpm=Math.round((totalTyped/5)/(e/60));
+  const acc=totalTyped>0?Math.round(((totalTyped-errors)/totalTyped)*100):100;
+  document.getElementById('resWpm').textContent=wpm;
+  document.getElementById('resAcc').textContent=acc+'%';
+  document.getElementById('resTime').textContent=e+'s';
+  document.getElementById('resChars').textContent=totalTyped;
+  document.getElementById('resErrors').textContent=errors;
+  document.getElementById('resTitle').textContent=practiceMode==='kw'?'단어 연습 결과':'코드 연습 결과';
+  const g=document.getElementById('resGrade');
+  const grades=[[80,'🏆 MASTER','#f7df1e'],[50,'⚡ ADVANCED','#3fb950'],[25,'▲ INTERMEDIATE','#58a6ff'],[0,'◎ BEGINNER','#484f58']];
+  const [,label,color]=grades.find(([min])=>wpm>=min);
+  g.textContent=label; g.style.borderColor=color; g.style.color=color;
+  document.getElementById('resultOverlay').classList.add('show');
+}
+
+function closeResult() {
+  document.getElementById('resultOverlay').classList.remove('show');
+  load(); setTimeout(focusInput,100);
+}
+
+// ═══════════════════════════════════════════════════
+// INPUT — textarea + compositionend (한글 IME 완벽 지원)
+// ═══════════════════════════════════════════════════
+const tin = document.getElementById('tin');
+tin.addEventListener('compositionstart',()=>{ isComposing=true; });
+tin.addEventListener('compositionend',()=>{ isComposing=false; processInput(); });
+tin.addEventListener('input',()=>{ if(!isComposing) processInput(); });
+
+function processInput() {
+  if(isFinished) return;
+  let val = tin.value;
+
+  // Hard limit
+  if(val.length > charMap.length) {
+    tin.value = val = val.slice(0, charMap.length);
+  }
+
+  if(!isRunning && val.length > 0) startGame();
+
+  const oldIndex = typedIndex;
+
+  if(val.length < typedIndex) {
+    // ── Backspace ──
+    for(let i = val.length; i < typedIndex; i++) wrongSet.delete(i);
+    typedIndex = val.length;
+    errors = wrongSet.size;
+  } else {
+    // ── Forward ── record correct/wrong BEFORE moving typedIndex
+    for(let i = typedIndex; i < val.length && i < charMap.length; i++) {
+      totalTyped++;
+      if(val[i] !== charMap[i].char) { wrongSet.add(i); errors++; }
+      else wrongSet.delete(i);
+    }
+    typedIndex = Math.min(val.length, charMap.length);
+  }
+
+  // ── Re-render only the changed range — typedIndex is already updated ──
+  const lo = Math.min(oldIndex, typedIndex);
+  const hi = Math.max(oldIndex, typedIndex);
+  for(let i = lo; i <= hi && i <= charMap.length; i++) {
+    updateSpan(i);
+  }
+
+  // stats
+  document.getElementById('charCount').textContent = `${typedIndex} / ${charMap.length}`;
+  document.getElementById('sProg').textContent = Math.round(typedIndex / charMap.length * 100);
+
+  // scroll cursor
+  const cur = spans[typedIndex];
+  if(cur) cur.scrollIntoView({block:'nearest', behavior:'smooth'});
+
+  // HTML preview
+  if(lang === 'html' && previewVisible) schedulePreview();
+
+  if(typedIndex >= charMap.length) finishGame();
+}
+
+// Keyboard shortcuts
+tin.addEventListener('keydown',e=>{
+  if(e.key==='Tab'){e.preventDefault();load();}
+  if(e.key==='Escape'){e.preventDefault();load();}
+  if(e.ctrlKey&&e.key==='n'){
+    e.preventDefault();
+    if(practiceMode==='kw'){idx=(idx+1)%3;load();}
+    else{const s=SNIPPETS[lang]||[];idx=(idx+1)%Math.max(1,s.length);load();}
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.target!==tin&&!['F5','F12','F1'].includes(e.key)&&!e.ctrlKey&&!e.metaKey&&!e.altKey)
+    focusInput();
+});
+document.getElementById('editorArea').addEventListener('click',focusInput);
+
+// ═══════════════════════════════════════════════════
+// HTML PREVIEW — sandboxed, script-free
+// ═══════════════════════════════════════════════════
+function togglePreview() {
+  previewVisible = !previewVisible;
+  document.getElementById('previewPanel').classList.toggle('show', previewVisible);
+  document.getElementById('previewToggleBtn').classList.toggle('active', previewVisible);
+  if(previewVisible) schedulePreview();
+}
+
+function schedulePreview() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 250);
+}
+
+function updatePreview() {
+  const typed = charMap.slice(0, typedIndex).map(c=>c.char).join('');
+  setPreviewContent(typed);
+}
+
+function setPreviewContent(html) {
+  const safe = sanitizeHtml(html);
+  try { document.getElementById('previewFrame').srcdoc = safe; } catch(e){}
+}
+
+function sanitizeHtml(html) {
+  // Strip script tags (sandboxed iframe already blocks scripts,
+  // but strip as extra defense)
+  return html
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script\s*>/gi,'')
+    .replace(/on\w+\s*=\s*"[^"]*"/gi,'')
+    .replace(/on\w+\s*=\s*'[^']*'/gi,'')
+    .replace(/javascript\s*:/gi,'blocked:');
+}
+
+// ═══════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════
+function openModal() {
+  document.getElementById('addModal').classList.add('show');
+  document.getElementById('addName').value='';
+  document.getElementById('addCode').value='';
+  document.getElementById('fileNameDisp').textContent='';
+  document.getElementById('addLang').value=lang;
+  document.getElementById('charWarning').style.display='none';
+  switchTab('direct');
+}
+function closeModal(){document.getElementById('addModal').classList.remove('show');}
+function switchTab(tab){
+  ['direct','file'].forEach(t=>{
+    document.getElementById('tab-btn-'+t).classList.toggle('active',t===tab);
+    document.getElementById('tab-'+t).classList.toggle('show',t===tab);
+  });
+}
+function checkCodeLen(){
+  const len=document.getElementById('addCode').value.length;
+  document.getElementById('charWarning').style.display=len>MAX_CHARS?'':'none';
+}
+function onFile(e){
+  const file=e.target.files[0];if(!file)return;
+  document.getElementById('fileNameDisp').textContent='📄 '+file.name;
+  const ext=file.name.split('.').pop().toLowerCase();
+  const map={html:'html',htm:'html',css:'css',js:'js',ts:'js',jsx:'js',py:'python',c:'c',cpp:'cpp',h:'cpp',cs:'csharp',java:'java'};
+  if(map[ext]) document.getElementById('addLang').value=map[ext];
+  if(!document.getElementById('addName').value) document.getElementById('addName').value=file.name;
+  const r=new FileReader();
+  r.onload=ev=>{document.getElementById('addCode').value=ev.target.result;checkCodeLen();switchTab('direct');};
+  r.readAsText(file,'utf-8');
+}
+function saveSnippet(){
+  const l=document.getElementById('addLang').value;
+  const name=document.getElementById('addName').value.trim();
+  let code=document.getElementById('addCode').value;
+  if(!name){alert('스니펫 이름을 입력해주세요!');return;}
+  if(!code.trim()){alert('코드를 입력해주세요!');return;}
+  if(code.length>MAX_CHARS) code=code.slice(0,MAX_CHARS);
+  const extMap={html:'html',css:'css',js:'js',python:'py',c:'c',cpp:'cpp',csharp:'cs',java:'java',custom:'txt'};
+  SNIPPETS[l].push({name,file:name.replace(/\s+/g,'_').toLowerCase()+'.'+(extMap[l]||'txt'),code,_custom:true});
+  saveLS();
+  lang=l; idx=SNIPPETS[l].length-1; practiceMode='code';
+  document.querySelectorAll('.lang-item').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('lang-'+l);if(el)el.classList.add('active');
+  document.getElementById('mode-code').classList.add('active');
+  document.getElementById('mode-kw').classList.remove('active');
+  closeModal(); load();
+}
+function delSnippet(i){
+  if(!confirm('삭제할까요?'))return;
+  SNIPPETS[lang].splice(i,1);
+  if(idx>=SNIPPETS[lang].length) idx=Math.max(0,SNIPPETS[lang].length-1);
+  saveLS(); load();
+}
+
+// ═══════════════════════════════════════════════════
+// LOCAL STORAGE
+// ═══════════════════════════════════════════════════
+function saveLS(){
+  try{
+    const d={};
+    Object.keys(SNIPPETS).forEach(l=>{d[l]=SNIPPETS[l].filter(s=>s._custom);});
+    localStorage.setItem('codetyping_v3',JSON.stringify(d));
+  }catch(e){}
+}
+function loadLS(){
+  try{
+    const raw=localStorage.getItem('codetyping_v3');if(!raw)return;
+    const d=JSON.parse(raw);
+    Object.keys(d).forEach(l=>{
+      if(SNIPPETS[l]) d[l].forEach(s=>{
+        if(!SNIPPETS[l].find(x=>x.name===s.name&&x._custom)) SNIPPETS[l].push(s);
+      });
+    });
+  }catch(e){}
+}
+
+// Close modals on backdrop click
+document.getElementById('addModal').addEventListener('click',e=>{if(e.target===document.getElementById('addModal'))closeModal();});
+document.getElementById('resultOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('resultOverlay'))closeResult();});
+
+// targetText를 생성할 때 trim()과 정규식을 활용해 깨끗하게 만듭니다.
+let rawCode = currentSnippet.code;
+if (mode === 'kw') {
+  // 1. 앞뒤 공백 제거
+  // 2. 줄바꿈(\n, \r)과 탭을 일반 공백 하나로 치환
+  // 3. 연속된 공백을 하나로 합침
+  targetText = rawCode.trim().replace(/\s+/g, ' ');
+} else {
+  targetText = rawCode;
+}
+
+// ═══════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════
+loadLS();
+load();
+setTimeout(focusInput,300);
+</script>
+</body>
+</html>
