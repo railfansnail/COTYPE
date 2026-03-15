@@ -1,0 +1,31 @@
+{
+  "http": {
+    "enabled": true,
+    "port": 3000
+  },
+  "https": {
+    "enabled": false,
+    "port": 443,
+    "certPath": "./certs/server.crt",
+    "keyPath": "./certs/server.key",
+    "redirectHttp": false
+  },
+  "ca": {
+    "enabled": false,
+    "caPath": "./certs/ca.crt",
+    "requestClientCert": false,
+    "rejectUnauthorized": false
+  },
+  "db": {
+    "path": "./db/rankings.db"
+  },
+  "ranking": {
+    "topN": 100,
+    "nicknameMinLen": 2,
+    "nicknameMaxLen": 20
+  },
+  "rateLimit": {
+    "windowMinutes": 10,
+    "maxRequests": 30
+  }
+}
