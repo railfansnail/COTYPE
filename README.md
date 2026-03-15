@@ -99,7 +99,7 @@ npm run dev        # 개발모드 (nodemon)
 ## 디렉토리 구조
 
 ```
-cotype-master/
+COTYPE-main/
 ├── server.js          # 메인 서버
 ├── config.json        # HTTP/HTTPS/CA 설정
 ├── package.json
